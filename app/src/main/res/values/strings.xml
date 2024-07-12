@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">На досуге</string>
+    <string name="roll">Бросить</string>
+    <string name="high_score">Ваше достижение: 0</string>
+    <string name="score">Очки: %1$d</string>
+    <string name="score_default">Очки: %d</string>
+    <string name="high_score_text">Ваше достижение: %1$d</string>
+    <string name="time">Время: %d</string>
+</resources>
