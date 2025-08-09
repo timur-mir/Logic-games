@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import home.howe.DiceRoller
 import home.howe.Roulette
+import home.howework.tictactoe.chess.ChessActivity
 
 class StartActivity : AppCompatActivity() {
 
@@ -27,6 +28,7 @@ class StartActivity : AppCompatActivity() {
                 4 -> dispatcherActivity(4)
                 5 -> dispatcherActivity(5)
                 6-> dispatcherActivity(6)
+                7-> dispatcherActivity(7)
                 else -> if (key == 0)
                     Snackbar.make(
                         findViewById(R.id.content),
@@ -64,6 +66,9 @@ class StartActivity : AppCompatActivity() {
                 R.id.minesweeper-> {
                     key = 6
                 }
+                R.id.our_chess-> {
+                    key = 7
+                }
             }
         }
     }
@@ -92,11 +97,17 @@ class StartActivity : AppCompatActivity() {
             6-> {
                 loadGameMineSweeper()
             }
+            7->{
+                loadChessGame()
+            }
         }
     }
 
     private fun loadGameTicTacToe() {
         loadFromIntent(MainActivity())
+    }
+    private fun loadChessGame() {
+        loadFromIntent(ChessActivity())
     }
 
     private fun loadGameFifteen() {
@@ -118,7 +129,7 @@ class StartActivity : AppCompatActivity() {
         loadFromIntent(Minesweeper())
     }
 
-    fun loadFromIntent(nameActivity: AppCompatActivity) {
+    private fun loadFromIntent(nameActivity: AppCompatActivity) {
         Handler().postDelayed(
             {
                 val intent = Intent(this, nameActivity::class.java)

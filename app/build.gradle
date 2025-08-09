@@ -4,14 +4,7 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        release {
-            storeFile file('D:\\KeystoreBase\\Keystore2\\tictactoe.jks')
-            storePassword 'jupiter29'
-            keyAlias 'tempfast'
-            keyPassword 'retrofit'
-        }
-    }
+  
     namespace 'home.howework.tictactoe'
     compileSdk 34
 
@@ -26,12 +19,12 @@ android {
     }
 
     buildTypes {
+   
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
         }
+    
         debug{
 
         }
