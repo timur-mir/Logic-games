@@ -3,13 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient2"
+    android:background="@drawable/backgroud_chess"
     tools:context=".MainActivity">
 
     <home.howework.tictactoe.chess.core.ChessView
         android:id="@+id/chessView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_above="@id/btnNewGame" />
 
     <Button
@@ -21,6 +21,18 @@
         android:background="@drawable/mybutton"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="38dp"
         android:text="Новая игра" />
+    <TextView
+        android:id="@+id/status_game"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorAccent"
+        android:background="#00DDC9C9"
+        android:gravity="center"
+        android:textSize="28sp"
+        android:text="Удачной игры"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="238dp"
+        android:layout_alignParentBottom="true"/>
 </RelativeLayout>

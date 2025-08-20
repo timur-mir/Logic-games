@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import home.howework.tictactoe.StartActivity
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {

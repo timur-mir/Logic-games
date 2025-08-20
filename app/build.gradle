@@ -4,7 +4,16 @@ plugins {
 }
 
 android {
-  
+    signingConfigs {
+        release {
+            storeFile rootProject.file(MY_STORE_FILE)
+            storePassword MY_STORE_PASSWORD
+            keyAlias MY_KEY_ALIAS
+            keyPassword MY_KEY_PASSWORD
+           // v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
     namespace 'home.howework.tictactoe'
     compileSdk 34
 
@@ -19,12 +28,12 @@ android {
     }
 
     buildTypes {
-   
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
-    
         debug{
 
         }

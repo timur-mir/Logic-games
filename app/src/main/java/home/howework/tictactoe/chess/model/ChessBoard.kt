@@ -1,8 +1,12 @@
 package home.howework.tictactoe.chess.model
 
+import java.lang.Math.abs
+
 class ChessBoard {
     private val board = Array(8) { arrayOfNulls<ChessPiece>(8) }
     var currentPlayer:PieceColor=PieceColor.WHITE
+    private var lastMovedPawn: ChessPiece? = null
+    var selectedPiece:ChessPiece?=null
     init {
         setupPieces()
     }
@@ -35,22 +39,73 @@ class ChessBoard {
         }
     }
 
+    //fun selectPiece(row: Int, col: Int){
+    //        selectedPiece=board[row][col]
+    //  if(selectedPiece!=null&& selectedPiece!!.color!=currentPlayer){
+    //          selectedPiece=null
+    //       }
+
     fun getPiece(row: Int, col: Int): ChessPiece? {
         return if (row in 0..7 && col in 0..7) board[row][col] else null
     }
-
     fun movePiece(fromRow: Int, fromCol: Int, toRow: Int, toCol: Int): Boolean {
-        if (!isValidMove(fromRow, fromCol, toRow, toCol)) return false
-
         val piece = getPiece(fromRow, fromCol) ?: return false
         val color = piece.color
+        if (piece.type == PieceType.PAWN) {
+            // Проверяем двойной ход
+            val rowDiff = Math.abs(piece.row - toRow)
+            if (rowDiff == 2) {
+                piece.lastMoveWasDouble = true
+                lastMovedPawn = piece
+            } else {
+                piece.lastMoveWasDouble = false
+            }
+        }
+        // Проверка на взятие на проходе
+        if (piece.type == PieceType.PAWN) {
+        // Проверяем, находится ли пешка на нужной горизонтали для взятия
+        val isOnSecondRank = (piece.color == PieceColor.WHITE && toRow == 5) ||
+                (piece.color == PieceColor.BLACK && toRow == 2)
 
+        if (Math.abs(toCol - piece.col) == 1 &&
+            isOnSecondRank &&
+            lastMovedPawn != null &&
+            lastMovedPawn!!.type == PieceType.PAWN &&
+            lastMovedPawn!!.lastMoveWasDouble &&
+            lastMovedPawn!!.col == toCol) {
+
+            // Удаляем пешку, которую взяли на проходе
+            board[lastMovedPawn!!.row][lastMovedPawn!!.col] = null
+
+            // Перемещаем нашу пешку на место взятой пешки
+            board[piece.row][piece.col] = null
+            board[toRow][toCol] = piece
+            piece.row = toRow
+            piece.col = toCol
+            piece.hasMoved = true
+
+            // Сброс флага после выполнения взятия
+            lastMovedPawn!!.lastMoveWasDouble = false
+            lastMovedPawn = null
+
+            // Смена игрока
+            currentPlayer = currentPlayer.opposite()
+           // selectedPiece = null
+            return true
+        }
+        }
+
+        if(piece.type==PieceType.KING&&abs(piece.col - toCol) ==2){
+            return performCastling(toCol<piece.col)
+        }
+        if (!isValidMove(fromRow, fromCol, toRow, toCol)) return false
         // Временный ход
         val capturedPiece = getPiece(toRow, toCol)
         board[toRow][toCol]  = piece
         board[fromRow][fromCol] = null
         piece.row = toRow
         piece.col = toCol
+        piece.hasMoved=true
 
         // Проверяем, остался ли король под шахом
         if (isKingInCheck(color)) {
@@ -61,7 +116,8 @@ class ChessBoard {
             piece.col = fromCol
             return false
         }
-        currentPlayer = if (currentPlayer == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
+        currentPlayer = currentPlayer.opposite()
+      //  selectedPiece = null
         return true
     }
 
@@ -133,8 +189,6 @@ class ChessBoard {
         val colDiff = Math.abs(toCol - fromCol)
         return (rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)
     }
-
-// Аналогично для других фигур (Bishop, Queen, King)...
 
     private fun isPathClear(fromRow: Int, fromCol: Int, toRow: Int, toCol: Int): Boolean {
         val rowStep = if (toRow > fromRow) 1 else if (toRow < fromRow) -1 else 0
@@ -236,5 +290,175 @@ class ChessBoard {
             }
         }
         return true // Нет допустимых ходов — пат
+    }
+    private fun performCastling(isKingside: Boolean): Boolean {
+        val row = if (currentPlayer == PieceColor.WHITE) 0 else 7
+        val king = board[row][3] ?: return false
+        val rookCol = if (isKingside) 0 else 7
+        val rook = board[row][rookCol] ?: return false
+
+        // Проверка условий для рокировки
+        if (king.hasMoved || rook.hasMoved) return false
+        if (isKingInCheck(currentPlayer)) return false
+
+        // Проверка пустоты промежуточных клеток
+        val betweenCols = if (isKingside)  1..2 else 4..6
+        for (col in betweenCols) {
+            if (board[row][col] != null) return false
+        }
+
+        // Проверка безопасности клеток для короля
+        val kingPassCols = if (isKingside) 1..2 else  4..5
+        for (col in kingPassCols) {
+            if (isSquareUnderAttack(row, col, currentPlayer.opposite())) {
+                return false
+            }
+        }
+
+        // Выполняем рокировку
+        val newKingCol = if (isKingside) 1 else 5
+        val newRookCol = if (isKingside) 2 else 4
+
+        // Перемещаем короля
+        board[row][3] = null
+        board[row][newKingCol] = king
+        king.col = newKingCol
+        king.hasMoved = true
+
+        // Перемещаем ладью
+        board[row][rookCol] = null
+        board[row][newRookCol] = rook
+        rook.col = newRookCol
+        rook.hasMoved = true
+
+        currentPlayer = currentPlayer.opposite()
+        return true
+    }
+    private fun isSquareUnderAttack(row: Int, col: Int, attackerColor: PieceColor): Boolean {
+        // Проверяем все клетки на доске
+        for (r in 0..7) {
+            for (c in 0..7) {
+                val piece = board[r][c]
+
+                // Если фигура нужного цвета
+                if (piece?.color == attackerColor) {
+                    // Проверяем, может ли фигура атаковать заданную клетку
+                    when (piece.type) {
+                        PieceType.PAWN -> {
+                            // Пешка атакует по диагонали
+                            if (piece.color == PieceColor.WHITE) {
+                                if (r + 1 == row && (c + 1 == col || c - 1 == col)) {
+                                    return true
+                                }
+                            } else {
+                                if (r - 1 == row && (c + 1 == col || c - 1 == col)) {
+                                    return true
+                                }
+                            }
+                        }
+                        PieceType.KNIGHT -> {
+                            // Конь атакует буквой Г
+                            val rowDiff = Math.abs(r - row)
+                            val colDiff = Math.abs(c - col)
+                            if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)) {
+                                return true
+                            }
+                        }
+                        PieceType.BISHOP -> {
+                            // Слон атакует по диагонали
+                            if (Math.abs(r - row) == Math.abs(c - col)) {
+                                if (canMoveAlongDiagonal(piece, row, col)) {
+                                    return true
+                                }
+                            }
+                        }
+                        PieceType.ROOK -> {
+                            // Ладья атакует по прямой
+                            if (r == row || c == col) {
+                                if (canMoveAlongLine(piece, row, col)) {
+                                    return true
+                                }
+                            }
+                        }
+                        PieceType.QUEEN -> {
+                            // Ферзь атакует как ладья и слон
+                            if (r == row || c == col || Math.abs(r - row) == Math.abs(c - col)) {
+                                if ((r == row || c == col) && canMoveAlongLine(piece, row, col) ||
+                                    Math.abs(r - row) == Math.abs(c - col) && canMoveAlongDiagonal(piece, row, col)) {
+                                    return true
+                                }
+                            }
+                        }
+                        PieceType.KING -> {
+                            // Король атакует на расстоянии 1
+                            if (Math.abs(r - row) <= 1 && Math.abs(c - col) <= 1) {
+                                return true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    // Вспомогательные функции для проверки пути
+    private fun canMoveAlongLine(piece: ChessPiece, targetRow: Int, targetCol: Int): Boolean {
+        val rowStep = if (targetRow > piece.row) 1 else -1
+        val colStep = if (targetCol > piece.col) 1 else -1
+
+        var r = piece.row + rowStep
+        var c = piece.col + colStep
+
+        while (r != targetRow || c != targetCol) {
+            if (board[r][c] != null) {
+                return false
+            }
+            if (r != targetRow) r += rowStep
+            if (c != targetCol) c += colStep
+            if(r==-1||c==-1){
+                return false
+            }
+        }
+        return true
+    }
+    private fun canMoveAlongDiagonal(piece: ChessPiece, targetRow: Int, targetCol: Int): Boolean {
+        // Определяем направление движения по диагонали
+        val rowStep = if (targetRow > piece.row) 1 else -1
+        val colStep = if (targetCol > piece.col) 1 else -1
+
+        // Начинаем проверку с первой клетки после текущей позиции фигуры
+        var r = piece.row + rowStep
+        var c = piece.col + colStep
+
+        // Проверяем все клетки до целевой позиции
+        while (r != targetRow && c != targetCol) {
+            // Если на пути есть фигура, путь заблокирован
+            if (board[r][c] != null) {
+                return false
+            }
+            // Переходим к следующей клетке по диагонали
+            r += rowStep
+            c += colStep
+            if(r==-1||c==-1){
+               return false
+            }
+        }
+
+        // Если дошли до целевой клетки без препятствий - путь свободен
+        return true
+    }
+
+    fun promotePawn(row: Int, col: Int, newType: PieceType) {
+        val piece = board[row][col] ?: return
+        if (piece.type != PieceType.PAWN) return
+
+        board[row][col] = ChessPiece(
+            type = newType,
+            color = piece.color,
+            row = row,
+            col = col,
+            hasMoved = true
+        )
     }
 }

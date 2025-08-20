@@ -52,11 +52,13 @@
 
     <Button
         android:id="@+id/buttonStart"
-        android:layout_width="wrap_content"
+        android:layout_width="220dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"
         android:onClick="onClickStart"
-        android:text="Делайте ставки"
+        android:padding="4dp"
+        android:text="Делайте ставки господа!"
+        android:lines="2"
         android:textColor="#070709"
         android:textStyle="bold"
         android:background="@drawable/mybutton2"
