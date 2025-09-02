@@ -29,6 +29,7 @@ class StartActivity : AppCompatActivity() {
                 5 -> dispatcherActivity(5)
                 6-> dispatcherActivity(6)
                 7-> dispatcherActivity(7)
+                8-> dispatcherActivity(8)
                 else -> if (key == 0)
                     Snackbar.make(
                         findViewById(R.id.content),
@@ -69,6 +70,9 @@ class StartActivity : AppCompatActivity() {
                 R.id.our_chess-> {
                     key = 7
                 }
+                R.id.balls-> {
+                    key = 8
+                }
             }
         }
     }
@@ -100,6 +104,9 @@ class StartActivity : AppCompatActivity() {
             7->{
                 loadChessGame()
             }
+            8->{
+                loadGameBalls()
+            }
         }
     }
 
@@ -108,6 +115,9 @@ class StartActivity : AppCompatActivity() {
     }
     private fun loadChessGame() {
         loadFromIntent(ChessActivity())
+    }
+    private fun loadGameBalls() {
+        loadFromIntent(BallActivity())
     }
 
     private fun loadGameFifteen() {
