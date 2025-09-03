@@ -83,7 +83,7 @@ class BallGameView(
                 iter.remove()
                 invalidate()
                 if (balls.isEmpty()) {
-                    balls.clear()
+                    //balls.clear()
                     generateBalls()
                     invalidate()
                     break
